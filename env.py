@@ -8,13 +8,16 @@ import math
 class Environment:
     all_screenShots_path = "./Screenshots/*/*.png"
     test_screenShots_path = "./Screenshots/andromeda/*.png"
-    img_array = np.array(99240)
+    img_array = np.zeros(6615, dtype=[('name', 'U10'), ('radius', 'f4'), ('fi_angel', 'f4'), ('theta_angel', 'f4'),
+                                      ('img', 'i4', (200, 200))])
+    fi_array = np.zeros(100, dtype=int)
 
     def __init__(self):
         self.read_files()
 
     def read_files(self):
-        for im_path in glob.glob(self.all_screenShots_path):
+        idx = 0
+        for im_path in glob.glob(self.test_screenShots_path):
             img = imageio.imread(im_path)
 
             name = self.get_name(im_path)
@@ -24,8 +27,18 @@ class Environment:
             x, y, z = self.get_descartes_coordinates(im_path)
             r, fi, theta = self.get_polar_coordinates(x, y, z)
 
-            element = np.array([(name, r, fi, theta, )],
-                               dtype=[('name', 'U10'), ('radius', 'f3'), ('fi_angel', 'f3'), ('theta_angel', 'f3')])
+            r_index = int((r - 0.5) / 0.15)  # r_index [0:6]
+            fi_index = int(fi / 8)  # fi_index [0:44]
+            theta_index = int((theta - 10) / 8)  # theta_index [0:20]
+
+            print(r, r_index, fi, fi_index, theta, theta_index)
+
+            element = np.array([(name, r, fi_index, theta_index, gray_scale_img)],
+                               dtype=[('name', 'U10'), ('radius_index', 'i2'), ('fi_angel_index', 'i2'), ('theta_angel_index', 'i2'),
+                                      ('img', 'i4', (200, 200))])
+
+            self.img_array[idx] = element
+            idx += 1
 
     def get_name(self, img_path):
         first_cut = img_path[14:]
@@ -43,7 +56,9 @@ class Environment:
         return float(str_x), float(str_y), float(str_z)
 
     def get_polar_coordinates(self, x, y, z):
+
         shifted_y = y - 1.6
+
         r = math.sqrt(math.pow(x, 2) + math.pow(shifted_y, 2) + math.pow(z, 2))
         theta = math.acos(shifted_y / r)
         fi = math.asin(x / (math.sin(theta) * r))
@@ -51,5 +66,20 @@ class Environment:
         # convert theta an fi from rad to degree
         theta = math.degrees(theta)
         fi = math.degrees(fi)
+
+        theta = int(round(theta))
+        fi = int(round(fi))
+        r = round(r, 2)
+
+        # convert fi to [0:360] intervall
+        if fi < 0:
+            fi += 360
+
+        if z > 0:
+            if x > 0:
+                fi = 180 - fi
+            elif x < 0:
+                fi = 180 + (360 - fi)
+        # -------------------------------
 
         return r, fi, theta
