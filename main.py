@@ -1,16 +1,15 @@
-import env
+import gym
 import random
-import numpy as np
-
-from display import Display
 
 if __name__ == "__main__":
 
-    env = env.Environment()  # environment initialization
+    env = gym.make('VirtualDrone-v0')  # environment initialization
 
-    observation = env.get_random_initial_state()
-    Display.show_img(observation)
+    observation = env.reset()
     for i in range(0, 1000):
-        reward, observation = env.step(random.randint(0, 5))
-        Display.show_img(observation)
+        env.render()
+        observation, reward, done, info = env.step(random.randint(0, 5))
+        if done:
+            print('Episode Finished!')
+            env.reset()
     print('end')
