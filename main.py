@@ -7,7 +7,7 @@ from config import MyConfigParser
 
 from rl.agents import DQNAgent
 from rl.agents import CEMAgent
-from rl.policy import GreedyQPolicy
+from rl.policy import EpsGreedyQPolicy, LinearAnnealedPolicy
 from rl.memory import SequentialMemory, EpisodeParameterMemory
 
 from keras.optimizers import Adam
@@ -17,17 +17,22 @@ if __name__ == "__main__":
     ENV_NAME = 'VirtualDrone-v0'
     section = 'DQNAgent'
     env = gym.make(ENV_NAME)  # environment initialization
-    logger = Logger(section)
+    logger = Logger(section, ENV_NAME)
     config = MyConfigParser(section)
 
     lr = float(config.config_section_map()['learningrate'])
-
+    print(env.action_space.n)
     cnn = CNN(env.action_space.n)
     logger.log_model_architect(cnn.model)
 
     limit = int(config.config_section_map()['memorylimit'])
+    eps = float(config.config_section_map()['epsilone'])
+    eps_min = float(config.config_section_map()['epsilonemin'])
+    eps_dec_steps = float(config.config_section_map()['decreasesteps'])
 
-    policy = GreedyQPolicy()
+    inner_policy = EpsGreedyQPolicy(eps=eps)
+    policy = LinearAnnealedPolicy(inner_policy=inner_policy, attr='eps', value_max=eps, value_min=eps_min,
+                                  nb_steps=eps_dec_steps, value_test=0)
     nb_actions = env.action_space.n
     nb_steps = int(config.config_section_map()['iterations'])
     nb_episodes = int(config.config_section_map()['evaluationepisodes'])
@@ -39,14 +44,15 @@ if __name__ == "__main__":
         agent = DQNAgent(model=cnn.model, policy=policy, nb_actions=nb_actions, memory=dqn_memory,
                          enable_double_dqn=False,
                          enable_dueling_network=False,
-                         dueling_type='avg')
+                         dueling_type='max')
     elif section == 'DDQNAgent':
         agent = DQNAgent(model=cnn.model, policy=policy, nb_actions=nb_actions, memory=dqn_memory,
                          enable_double_dqn=True,
                          enable_dueling_network=True,
-                         dueling_type='avg')
+                         dueling_type='max')
     elif section == 'CEMAgent':
-        agent = CEMAgent(model=cnn.model, nb_actions=nb_actions, memory=cem_memory, batch_size=32, nb_steps_warmup=10000,
+        agent = CEMAgent(model=cnn.model, nb_actions=nb_actions, memory=cem_memory, batch_size=32,
+                         nb_steps_warmup=10000,
                          train_interval=100,
                          elite_frac=0.05)
 

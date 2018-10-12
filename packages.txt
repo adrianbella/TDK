@@ -1,4 +1,8 @@
+export LC_ALL=C
+
 git clone https://github.com/adrianbella/gym.git
+cd gym
+python3 setup.py install
 git clone https://github.com/adrianbella/TDK.git
 git clone https://github.com/keras-rl/keras-rl.git
 cd keras-rl
@@ -12,5 +16,6 @@ pip3 install imageio
 pip3 install keras
 pip3 install keras-rl
 pip3 install tensorflow
+pip3 install tensorflow-gpu
 
 mkdir log
