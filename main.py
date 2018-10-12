@@ -15,7 +15,7 @@ from keras.optimizers import Adam
 if __name__ == "__main__":
 
     ENV_NAME = 'VirtualDrone-v0'
-    section = 'CEMAgent'
+    section = 'DQNAgent'
     env = gym.make(ENV_NAME)  # environment initialization
     logger = Logger(section)
     config = MyConfigParser(section)
