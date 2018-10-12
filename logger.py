@@ -6,7 +6,7 @@ import keras
 
 
 class Logger(keras.callbacks.Callback):
-    def __init__(self, section):
+    def __init__(self, section, ENV_NAME):
 
         self.section = section
         self.config = ConfigParser()
@@ -18,7 +18,8 @@ class Logger(keras.callbacks.Callback):
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        logging.basicConfig(filename=directory + str(datetime.datetime.now()) + '.log', level=logging.DEBUG)
+        logging.basicConfig(filename=directory + ENV_NAME + '_' + section + '_' + str(datetime.datetime.now()) + '.log',
+                            level=logging.DEBUG)
 
         try:
             self.log_config_parameters(config_file)
@@ -60,7 +61,9 @@ class Logger(keras.callbacks.Callback):
 
     def on_train_end(self, logs={}):
         for i in range(len(self.rewards)):
-            logging.info("Reward:{}, actions:{}, episode:{}, loss: {}".format(self.rewards[i], self.actions[i], self.episode[i], self.losses[i]))
+            logging.info(
+                "Reward:{}, actions:{}, episode:{}, loss: {}".format(self.rewards[i], self.actions[i], self.episode[i],
+                                                                     self.losses[i]))
         self.rewards.clear()
         self.actions.clear()
         self.losses.clear()
