@@ -1,10 +1,16 @@
 git clone https://github.com/adrianbella/gym.git
 git clone https://github.com/adrianbella/TDK.git
+git clone https://github.com/keras-rl/keras-rl.git
+cd keras-rl
+python3 setup.py install
 
 pip3 install pillow
 pip3 install opencv-python
 pip3 install psutil
 pip3 install numpy
 pip3 install imageio
+pip3 install keras
+pip3 install keras-rl
+pip3 install tensorflow
 
 mkdir log
