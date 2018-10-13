@@ -3,26 +3,29 @@ from configparser import ConfigParser
 import datetime
 import os
 import keras
+import csv
 
 
 class Logger(keras.callbacks.Callback):
     def __init__(self, section, ENV_NAME):
 
         self.section = section
+        self.ENV_NAME = ENV_NAME
         self.config = ConfigParser()
-        directory = './log/'
-        config_file = './config.ini'
+        self.directory = './log/'
+        self.config_file = './config.ini'
         self.rewards = []
         self.actions = []
 
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+        if not os.path.exists(self.directory):
+            os.makedirs(self.directory)
 
-        logging.basicConfig(filename=directory + ENV_NAME + '_' + section + '_' + str(datetime.datetime.now()) + '.log',
-                            level=logging.DEBUG)
+        logging.basicConfig(
+            filename=self.directory + self.ENV_NAME + '_' + self.section + '_' + str(datetime.datetime.now()) + '.log',
+            level=logging.DEBUG)
 
         try:
-            self.log_config_parameters(config_file)
+            self.log_config_parameters(self.config_file)
         except IOError:
             print('File config.ini doesn\'t exist!')
 
@@ -51,20 +54,35 @@ class Logger(keras.callbacks.Callback):
         self.actions = []
         self.episode = []
         self.losses = []
+        self.q_values = []
+        self.epsilone = []
         print('training_begin')
 
     def on_batch_end(self, batch, logs={}):
-        self.rewards.append(logs.get('reward'))
-        self.actions.append(logs.get('action'))
-        self.episode.append(logs.get('episode'))
-        self.losses.append(logs.get('loss'))
+        if logs.get('episode') > 25:
+            self.rewards.append(logs.get('reward'))
+            self.actions.append(logs.get('action'))
+            self.episode.append(logs.get('episode'))
+            self.losses.append(logs.get('metrics')[0])
+            self.q_values.append(logs.get('metrics')[2])
+            self.epsilone.append(logs.get('metrics')[3])
 
     def on_train_end(self, logs={}):
-        for i in range(len(self.rewards)):
-            logging.info(
-                "Reward:{}, actions:{}, episode:{}, loss: {}".format(self.rewards[i], self.actions[i], self.episode[i],
-                                                                     self.losses[i]))
+        if len(self.rewards) > 1:
+            with open(self.directory + self.ENV_NAME + '_' + self.section + '_' + str(datetime.datetime.now()) + '.csv',
+                      'w+') as csvfile:
+                fieldnames = ['reward', 'actions', 'episodes', 'losses', 'q_values', 'epsilone']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writeheader()
+                for i in range(len(self.rewards)):
+                    writer.writerow({'reward': self.rewards[i], 'actions': self.actions[i], 'episodes': self.episode[i],
+                                     'losses': self.losses[i],
+                                     'q_values': self.q_values[i], 'epsilone': self.epsilone[i]})
+
         self.rewards.clear()
         self.actions.clear()
+        self.episode.clear()
         self.losses.clear()
+        self.q_values.clear()
+        self.epsilone.clear()
         print('training_end')

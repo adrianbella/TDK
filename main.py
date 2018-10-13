@@ -53,7 +53,7 @@ if __name__ == "__main__":
     elif section == 'CEMAgent':
         agent = CEMAgent(model=cnn.model, nb_actions=nb_actions, memory=cem_memory, batch_size=32,
                          nb_steps_warmup=10000,
-                         train_interval=100,
+                         train_interval=50,
                          elite_frac=0.05)
 
     if section == 'DQNAgent' or section == 'DDQNAgent':
