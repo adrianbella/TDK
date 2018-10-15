@@ -64,8 +64,12 @@ class Logger(keras.callbacks.Callback):
             self.actions.append(logs.get('action'))
             self.episode.append(logs.get('episode'))
             self.losses.append(logs.get('metrics')[0])
-            self.q_values.append(logs.get('metrics')[2])
-            self.epsilone.append(logs.get('metrics')[3])
+            if self.section != 'CEMAgent':
+                self.q_values.append(logs.get('metrics')[2])
+                self.epsilone.append(logs.get('metrics')[3])
+            else:
+                self.q_values.append(None)
+                self.epsilone.append(None)
 
     def on_train_end(self, logs={}):
         if len(self.rewards) > 1:
