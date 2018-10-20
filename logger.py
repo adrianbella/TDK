@@ -4,6 +4,7 @@ import datetime
 import os
 import keras
 import csv
+import numpy as np
 
 
 class Logger(keras.callbacks.Callback):
@@ -59,17 +60,22 @@ class Logger(keras.callbacks.Callback):
         print('training_begin')
 
     def on_batch_end(self, batch, logs={}):
-        if logs.get('episode') > 25:
+        if logs.get('episode') > 25 and (
+                    self.section == 'DQNAgent' or self.section == 'DDQNAgent' or self.section == 'SARSAAgent')\
+                    and not (np.isnan(logs.get('metrics')[0]) and np.isnan(logs.get('metrics')[2]) and np.isnan(logs.get('metrics')[3])):
             self.rewards.append(logs.get('reward'))
             self.actions.append(logs.get('action'))
             self.episode.append(logs.get('episode'))
             self.losses.append(logs.get('metrics')[0])
-            if self.section != 'CEMAgent':
-                self.q_values.append(logs.get('metrics')[2])
-                self.epsilone.append(logs.get('metrics')[3])
-            else:
-                self.q_values.append(None)
-                self.epsilone.append(None)
+            self.q_values.append(logs.get('metrics')[2])
+            self.epsilone.append(logs.get('metrics')[3])
+        elif logs.get('episode') > 250 and self.section == 'CEMAgent':
+            self.rewards.append(logs.get('reward'))
+            self.actions.append(logs.get('action'))
+            self.episode.append(logs.get('episode'))
+            self.losses.append(logs.get('metrics')[0])
+            self.q_values.append(None)
+            self.epsilone.append(None)
 
     def on_train_end(self, logs={}):
         if len(self.rewards) > 1:
