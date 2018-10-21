@@ -15,8 +15,6 @@ class Logger(keras.callbacks.Callback):
         self.config = ConfigParser()
         self.directory = './log/'
         self.config_file = './config.ini'
-        self.rewards = []
-        self.actions = []
 
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
