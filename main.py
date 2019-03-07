@@ -2,6 +2,7 @@ import gym
 import datetime
 
 from model import CNN
+from minimized_model import MinimizedCNN
 from logger import Logger
 from config import MyConfigParser
 
@@ -16,14 +17,21 @@ from keras.optimizers import Adam
 if __name__ == "__main__":
 
     ENV_NAME = 'VirtualDrone-v0'
-    section = 'SARSAAgent'
+    section = 'minimizedDQN'
     env = gym.make(ENV_NAME)  # environment initialization
     logger = Logger(section, ENV_NAME)
     config = MyConfigParser(section)
 
     lr = float(config.config_section_map()['learningrate'])
     print(env.action_space.n)
-    cnn = CNN(env.action_space.n)
+    if section == 'minimizedDQN':
+        hidden_fc_size = 8
+        hidden_conv1_filters = 8
+        hidden_conv2_filters = 16
+        file_path = ENV_NAME + '_' + section + '_conv1' + str(hidden_conv1_filters)  + '_conv2' + str(hidden_conv2_filters) + '_fc' + str(hidden_fc_size) + '.h5f'
+        cnn = MinimizedCNN(env.action_space.n, hidden_fc_size, hidden_conv1_filters, hidden_conv2_filters, file_path)
+    else:
+        cnn = CNN(env.action_space.n)
     logger.log_model_architect(cnn.model)
 
     limit = int(config.config_section_map()['memorylimit'])
@@ -42,7 +50,7 @@ if __name__ == "__main__":
     cem_memory = EpisodeParameterMemory(limit=limit, window_length=1)
     sarsa_memory = SequentialMemory(limit=limit, window_length=1)
 
-    if section == 'DQNAgent':
+    if section == 'DQNAgent' or section == 'minimizedDQN':
         agent = DQNAgent(model=cnn.model, policy=policy, nb_actions=nb_actions, memory=dqn_memory,
                          enable_double_dqn=False,
                          enable_dueling_network=False,
@@ -61,7 +69,7 @@ if __name__ == "__main__":
         agent = SARSAAgent(model=cnn.model, nb_actions=nb_actions, policy=policy, test_policy=None, gamma=0.99,
                            nb_steps_warmup=1000, train_interval=1, delta_clip=np.inf)
 
-    if section == 'DQNAgent' or section == 'DDQNAgent' or section == 'SARSAAgent':
+    if section == 'DQNAgent' or section == 'DDQNAgent' or section == 'SARSAAgent' or section == 'minimizedDQN':
         agent.compile(Adam(lr=lr), metrics=['mse'])
     else:
         agent.compile()

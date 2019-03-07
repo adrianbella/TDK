@@ -59,7 +59,7 @@ class Logger(keras.callbacks.Callback):
 
     def on_batch_end(self, batch, logs={}):
         if logs.get('episode') > 25 and (
-                    self.section == 'DQNAgent' or self.section == 'DDQNAgent' or self.section == 'SARSAAgent')\
+                    self.section == 'DQNAgent' or self.section == 'DDQNAgent' or self.section == 'SARSAAgent' or self.section == 'minimizedDQN')\
                     and not (np.isnan(logs.get('metrics')[0]) and np.isnan(logs.get('metrics')[2]) and np.isnan(logs.get('metrics')[3])):
             self.rewards.append(logs.get('reward'))
             self.actions.append(logs.get('action'))
