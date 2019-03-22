@@ -17,7 +17,7 @@ from keras.optimizers import Adam
 if __name__ == "__main__":
 
     ENV_NAME = 'VirtualDrone-v0'
-    section = 'minimizedDQN'
+    section = 'DQNAgent'
     env = gym.make(ENV_NAME)  # environment initialization
     logger = Logger(section, ENV_NAME)
     config = MyConfigParser(section)
@@ -31,7 +31,8 @@ if __name__ == "__main__":
         file_path = ENV_NAME + '_' + section + '_conv1' + str(hidden_conv1_filters)  + '_conv2' + str(hidden_conv2_filters) + '_fc' + str(hidden_fc_size) + '.h5f'
         cnn = MinimizedCNN(env.action_space.n, hidden_fc_size, hidden_conv1_filters, hidden_conv2_filters, file_path)
     else:
-        cnn = CNN(env.action_space.n)
+        file_path = ENV_NAME + '.h5f'
+        cnn = CNN(env.action_space.n, file_path)
     logger.log_model_architect(cnn.model)
 
     limit = int(config.config_section_map()['memorylimit'])
