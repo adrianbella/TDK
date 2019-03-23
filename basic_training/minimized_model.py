@@ -4,12 +4,11 @@ from keras.models import Sequential
 
 
 class MinimizedCNN:
-    def __init__(self, action_size, hidden_fc_size, hidden_conv1_filters, hidden_conv2_filters, file_path):
+    def __init__(self, action_size, hidden_fc_size, hidden_conv1_filters, hidden_conv2_filters):
         self.action_size = action_size
         self.hidden_fc_size = hidden_fc_size
         self.hidden_conv1_filters = hidden_conv1_filters
         self.hidden_conv2_filters = hidden_conv2_filters
-        self.file_path = file_path
         self.model = self._build_model()
 
     def _build_model(self):
@@ -27,11 +26,5 @@ class MinimizedCNN:
 
         model.add(Dense(self.hidden_fc_size, activation='relu'))
         model.add(Dense(self.action_size, activation='softmax'))
-
-        try:
-            model.load_weights(filepath=self.file_path)
-            print('Loaded master_weights was successful')
-        except ImportError:
-            print('Loaded master_weights aborted! File not found:{} '.format(self.file_path))
 
         return model

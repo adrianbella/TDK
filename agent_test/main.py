@@ -12,8 +12,7 @@ if __name__ == "__main__":
     hidden_fc_size = 8
     hidden_conv1_filters = 8
     hidden_conv2_filters = 16
-    file_path = "VirtualDrone-v0_SARSAAgent.h5f"
-    #file_path = "VirtualDrone-v0_DDQNAgent_2018-10-15 12:16:32.416484_weights.h5f"
+    file_path = "VirtualDrone-v0_DQNAgent.h5f"
 
     #model = CNN(env.action_space.n, hidden_fc_size, hidden_conv1_filters, hidden_conv2_filters, file_path)
     model = OriginalCNN(env.action_space.n, file_path)

@@ -21,18 +21,19 @@ if __name__ == "__main__":
     env = gym.make(ENV_NAME)  # environment initialization
     logger = Logger(section, ENV_NAME)
     config = MyConfigParser(section)
+    #file_path = section + '.h5f'
 
     lr = float(config.config_section_map()['learningrate'])
-    print(env.action_space.n)
+
     if section == 'minimizedDQN':
         hidden_fc_size = 8
         hidden_conv1_filters = 8
         hidden_conv2_filters = 16
-        file_path = ENV_NAME + '_' + section + '_conv1' + str(hidden_conv1_filters)  + '_conv2' + str(hidden_conv2_filters) + '_fc' + str(hidden_fc_size) + '.h5f'
-        cnn = MinimizedCNN(env.action_space.n, hidden_fc_size, hidden_conv1_filters, hidden_conv2_filters, file_path)
+        file_path = ENV_NAME + '_' + section + '_conv1' + str(hidden_conv1_filters) + '_conv2' + str(
+            hidden_conv2_filters) + '_fc' + str(hidden_fc_size) + '.h5f'
+        cnn = MinimizedCNN(env.action_space.n, hidden_fc_size, hidden_conv1_filters, hidden_conv2_filters)
     else:
-        file_path = ENV_NAME + '.h5f'
-        cnn = CNN(env.action_space.n, file_path)
+        cnn = CNN(env.action_space.n)
     logger.log_model_architect(cnn.model)
 
     limit = int(config.config_section_map()['memorylimit'])
@@ -49,33 +50,34 @@ if __name__ == "__main__":
 
     dqn_memory = SequentialMemory(limit=limit, window_length=1)
     cem_memory = EpisodeParameterMemory(limit=limit, window_length=1)
-    sarsa_memory = SequentialMemory(limit=limit, window_length=1)
 
     if section == 'DQNAgent' or section == 'minimizedDQN':
         agent = DQNAgent(model=cnn.model, policy=policy, nb_actions=nb_actions, memory=dqn_memory,
                          enable_double_dqn=False,
                          enable_dueling_network=False,
                          dueling_type='max')
+        #agent.load_weights(file_path)
     elif section == 'DDQNAgent':
         agent = DQNAgent(model=cnn.model, policy=policy, nb_actions=nb_actions, memory=dqn_memory,
                          enable_double_dqn=True,
                          enable_dueling_network=True,
                          dueling_type='max')
+        #agent.load_weights(file_path)
     elif section == 'CEMAgent':
         agent = CEMAgent(model=cnn.model, nb_actions=nb_actions, memory=cem_memory, batch_size=50,
                          nb_steps_warmup=1000,
                          train_interval=1,
                          elite_frac=0.1)
+        #agent.load_weights(file_path)
     elif section == 'SARSAAgent':
         agent = SARSAAgent(model=cnn.model, nb_actions=nb_actions, policy=policy, test_policy=None, gamma=0.99,
                            nb_steps_warmup=1000, train_interval=1, delta_clip=np.inf)
-
+        #agent.load_weights(file_path)
     if section == 'DQNAgent' or section == 'DDQNAgent' or section == 'SARSAAgent' or section == 'minimizedDQN':
         agent.compile(Adam(lr=lr), metrics=['mse'])
     else:
         agent.compile()
 
-    print(agent.metrics_names)
     history = agent.fit(env, action_repetition=1, nb_steps=nb_steps, callbacks=[logger], visualize=False,
                         verbose=2)
 
