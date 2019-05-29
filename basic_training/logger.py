@@ -15,6 +15,8 @@ class Logger(keras.callbacks.Callback):
         self.config = ConfigParser()
         self.directory = './log/'
         self.config_file = './config.ini'
+        self.file_path = './training_weights/'
+        self.step_count = 0
 
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
@@ -42,6 +44,9 @@ class Logger(keras.callbacks.Callback):
     def log_model_architect(self, model):
         model.summary(print_fn=logging.info)
 
+    def set_model(self, model):
+        self.model = model
+
     def log_history(self, history):
         logging.info('History:')
         logging.info('Episod average rewards: {}'.format(history.history.get('episode_reward')))
@@ -55,9 +60,12 @@ class Logger(keras.callbacks.Callback):
         self.losses = []
         self.q_values = []
         self.epsilone = []
+        self.model.save_weights(self.file_path + self.ENV_NAME + '_' + self.section + '_' + str(self.step_count) + '_' + str(datetime.datetime.now()))
         print('training_begin')
 
     def on_batch_end(self, batch, logs={}):
+        self.step_count += 1
+
         if logs.get('episode') > 25 and (
                     self.section == 'DQNAgent' or self.section == 'DDQNAgent' or self.section == 'SARSAAgent' or self.section == 'minimizedDQN')\
                     and not (np.isnan(logs.get('metrics')[0]) and np.isnan(logs.get('metrics')[2]) and np.isnan(logs.get('metrics')[3])):
@@ -67,13 +75,8 @@ class Logger(keras.callbacks.Callback):
             self.losses.append(logs.get('metrics')[0])
             self.q_values.append(logs.get('metrics')[2])
             self.epsilone.append(logs.get('metrics')[3])
-        elif logs.get('episode') > 250 and self.section == 'CEMAgent':
-            self.rewards.append(logs.get('reward'))
-            self.actions.append(logs.get('action'))
-            self.episode.append(logs.get('episode'))
-            self.losses.append(logs.get('metrics')[0])
-            self.q_values.append(None)
-            self.epsilone.append(None)
+            if (self.step_count % 10000 == 0):
+                self.model.save_weights(self.file_path + self.ENV_NAME + '_' + self.section + '_' + str(self.step_count) + '_' + str(datetime.datetime.now()))
 
     def on_train_end(self, logs={}):
         if len(self.rewards) > 1:

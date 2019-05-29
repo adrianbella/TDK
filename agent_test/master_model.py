@@ -21,7 +21,7 @@ class OriginalCNN:
         model.add(Flatten())
 
         model.add(Dense(512, activation='relu'))
-        model.add(Dense(self.action_size, activation='softmax'))
+        model.add(Dense(self.action_size))
 
         try:
             model.load_weights(filepath=self.file_path)

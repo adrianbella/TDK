@@ -25,6 +25,6 @@ class MinimizedCNN:
         model.add(Flatten())
 
         model.add(Dense(self.hidden_fc_size, activation='relu'))
-        model.add(Dense(self.action_size, activation='softmax'))
+        model.add(Dense(self.action_size))
 
         return model

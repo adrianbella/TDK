@@ -19,7 +19,7 @@ class CNN:
         model.add(Flatten())
 
         model.add(Dense(512, activation='relu'))
-        model.add(Dense(self.action_size, activation='softmax'))
+        model.add(Dense(self.action_size))
 
         return model
 

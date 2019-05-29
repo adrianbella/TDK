@@ -1,17 +1,19 @@
 import gym
+import datetime
 
 from master_model import MasterCNN
 from student_model import StudentCNN
 from logger import Logger
-
 from agent import Agent
+
+from tensorflow.python.keras.callbacks import TensorBoard
 
 if __name__ == '__main__':
 
     ENV_NAME = 'VirtualDrone-v0'
     AGENT_TYPE = 'DQNAgent'
     database_limit = 1024
-    hidden_fc_size = 256
+    hidden_fc_size = 8
     hidden_conv1_filters = 8
     hidden_conv2_filters = 16
     learning_rate = 0.0005
@@ -20,6 +22,8 @@ if __name__ == '__main__':
 
     master_file_path = './master_weights/' + ENV_NAME + '_' + AGENT_TYPE + '.h5f'
 
+    tensorboard = TensorBoard(log_dir="log/{}".format(ENV_NAME + AGENT_TYPE + str(datetime.datetime.now())))
+
     master_model = MasterCNN(env.action_space.n, master_file_path)
     student_model = StudentCNN(env.action_space.n, hidden_fc_size, learning_rate, hidden_conv1_filters, hidden_conv2_filters)
 
@@ -27,6 +31,6 @@ if __name__ == '__main__':
 
     agent = Agent(env.action_space.n, database_limit, config)
 
-    agent.fit_student(master_model, student_model, env, logger)
+    agent.fit_student(master_model, student_model, env, logger, tensorboard)
 
     print('end')

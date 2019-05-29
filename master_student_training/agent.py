@@ -1,6 +1,7 @@
 import keras
 
 import numpy as np
+import tensorflow as tf
 
 
 class Agent:
@@ -9,7 +10,12 @@ class Agent:
         self.database_limit = database_limit
         self.file_path = './student_weights/' + file_path
 
-    def fit_student(self, master, student, env, logger):
+        # init_op = tf.initialize_all_variables()
+        #
+        # sess = tf.InteractiveSession()
+        # sess.run(init_op)
+
+    def fit_student(self, master, student, env, logger, tensorboard):
 
         labels = np.zeros((self.database_limit, 1), dtype=np.float32)
         observations = np.zeros((self.database_limit, 1, 200, 200), dtype=np.float32)
@@ -26,7 +32,7 @@ class Agent:
                 observations[i][0] = observation[0][0]
 
             one_hot_labels = keras.utils.to_categorical(labels, self.action_size)
-            student.model.fit(observations, one_hot_labels, epochs=1, batch_size=64, callbacks=[logger], verbose=2)
+            student.model.fit(observations, one_hot_labels, epochs=1, batch_size=64, callbacks=[logger, tensorboard], verbose=2)
 
             if j % 50 == 0:
                 student.model.save_weights(filepath=self.file_path + '.h5f', overwrite=True)
